@@ -5,7 +5,7 @@ repos:
         name: Check Versions Consistency
         description: "Ensures that pyproject.toml and package.json versions match."
         entry: python -m version_sync
-        language: system
+        language: python
         pass_filenames: false
         args:
           - "--sync"
