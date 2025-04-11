@@ -1,8 +1,14 @@
-repos:
-  - repo: local
-    hooks:
-      - id: version-sync
-        name: Check that pyproject.toml and package.json versions match
-        entry: python check_versions.py --pyproject=path/to/pyproject.toml --package=path/to/package.json
-        language: system
-        files: ^(pyproject\.toml|package\.json)$
+# repos:
+#   - repo: local
+#     hooks:
+#       - id: version-sync
+#         name: Check Versions Consistency
+#         description: "Ensures that pyproject.toml and package.json versions match."
+#         entry: python -m version_sync
+#         language: system
+#         pass_filenames: false
+#         args:
+#           - "--sync"
+#           - src/version_sync/__init__.py
+#           - pyproject.toml
+#           - package.json

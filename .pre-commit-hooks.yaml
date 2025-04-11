@@ -1,0 +1,6 @@
+- id: version-sync
+  name: Check Versions Consistency
+  description: "Ensures that pyproject.toml and package.json versions match."
+  entry: python -m version_sync
+  language: system
+  # pass_filenames: false

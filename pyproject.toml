@@ -3,7 +3,23 @@ name = "version-sync"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 dependencies = [
+    "packaging>=24.2",
     "pre-commit>=4.2.0",
+    "toml>=0.10.2",
 ]
+
+[build-system]
+requires = [ "setuptools>=42",]
+build-backend = "setuptools.build_meta"
+
+
+[tool.setuptools.package-dir]
+"" = "src"
+
+[tool.setuptools.packages.find]
+where = [ "src",]
+
+[project.scripts]
+version_sync = "version_sync.__main__:main"
