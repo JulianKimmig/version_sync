@@ -5,8 +5,8 @@ import sys
 from typing import Dict
 from pathlib import Path
 from .package_json import get_packagejson_version, sync_package_json_version
-from .pyproject_toml import get_pyproject_version
-from .pyfile import get_pyfile_version
+from .pyproject_toml import get_pyproject_version, sync_pyproject_version
+from .pyfile import get_pyfile_version, sync_pyfile_version
 # Use built-in tomllib if available (Python 3.11+), otherwise fall back to third-party 'toml'
 
 
@@ -15,12 +15,13 @@ def parse_versions(args):
     pyvars = args.py_vars.split(";")
     versions = {}
     for file in files:
+        path = Path(file).absolute()
         if file.name == "pyproject.toml":
-            version = get_pyproject_version(file)
+            version = get_pyproject_version(path)
         elif file.name == "package.json":
-            version = get_packagejson_version(file)
+            version = get_packagejson_version(path)
         elif file.suffix == ".py":
-            version = get_pyfile_version(file, pyvars)
+            version = get_pyfile_version(path, pyvars)
         else:
             print(f"Error: Unsupported file type '{file.suffix}'.", file=sys.stderr)
             sys.exit(1)
@@ -84,12 +85,12 @@ def main():
         print(f"  - {file}: '{version}'")
 
     # Determine the highest version
-    highest_version_obj = max(parsed_versions.values())
+    highest_version = max(parsed_versions.values())
 
     if args.sync:
         # Sync all files to the highest version.
-        sync_versions(parsed_versions, highest_version_obj, args)
-        print("Synchronization complete. All file versions set to", highest_version_obj)
+        sync_versions(parsed_versions, highest_version, args)
+        print("Synchronization complete. All file versions set to", highest_version)
         sys.exit(0)
     else:
         # Without syncing, just check for consistency.
@@ -101,7 +102,7 @@ def main():
                 print(f"  - {file}: '{ver}'")
             sys.exit(1)
         else:
-            print("Versions match:", highest_version_str)
+            print("Versions match:", highest_version)
             sys.exit(0)
 
 

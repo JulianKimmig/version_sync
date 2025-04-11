@@ -1,6 +1,8 @@
 import ast
 import sys
 from typing import List
+from pathlib import Path
+import re
 
 
 def get_pyfile_version(path: str, pyvars: List[str]) -> str:
@@ -38,14 +40,53 @@ def get_pyfile_version(path: str, pyvars: List[str]) -> str:
         if isinstance(node, ast.Assign):
             for target in node.targets:
                 if isinstance(target, ast.Name) and target.id in pyvars:
-                    # For Python < 3.8, string literals are ast.Str.
-                    if isinstance(node.value, ast.Str):
-                        return node.value.s
-                    # For Python 3.8+, string literals are represented as ast.Constant.
-                    elif isinstance(node.value, ast.Constant) and isinstance(
-                        node.value.value, str
-                    ):
-                        return node.value.value
+                    return node.value.value
 
     print(f"Error: No version assignment found in '{path}'.", file=sys.stderr)
     sys.exit(1)
+
+
+def sync_pyfile_version(path: Path, pyvars: List[str], new_version: str) -> None:
+    """
+    Update the version in a Python file by searching for assignments to one of the provided
+    version variable names and replacing the value with the new version.
+    """
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            lines = f.readlines()
+    except Exception as e:
+        print(f"Error reading {path}: {e}", file=sys.stderr)
+        sys.exit(1)
+
+    # Construct a regex pattern to catch assignment to any of the candidate version variables.
+    pattern = re.compile(
+        r"^(\s*("
+        + "|".join(re.escape(var) for var in pyvars)
+        + r')\s*=\s*)([\'"])(.*?)([\'"])(.*)$'
+    )
+    new_lines = []
+    found = False
+    for line in lines:
+        m = pattern.match(line)
+        if m:
+            prefix = m.group(1)
+            quote = m.group(3)
+            suffix = m.group(6)
+            new_line = f"{prefix}{quote}{new_version}{quote}{suffix}\n"
+            new_lines.append(new_line)
+            found = True
+        else:
+            new_lines.append(line)
+
+    if not found:
+        print(
+            f"Warning: No version assignment found in {path} to update.",
+            file=sys.stderr,
+        )
+
+    try:
+        with open(path, "w", encoding="utf-8") as f:
+            f.writelines(new_lines)
+    except Exception as e:
+        print(f"Error writing {path}: {e}", file=sys.stderr)
+        sys.exit(1)

@@ -3,4 +3,4 @@
   description: "Ensures that pyproject.toml and package.json versions match."
   entry: python -m version_sync
   language: system
-  # pass_filenames: false
+  pass_filenames: false

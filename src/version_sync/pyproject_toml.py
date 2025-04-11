@@ -4,10 +4,12 @@ from pathlib import Path
 from packaging.version import Version
 
 
-def get_pyproject_version(path: str) -> str:
+def get_pyproject_version(path: Path) -> str:
     try:
-        with open(path, "rb") as f:
-            data = toml.load(f)
+        with open(path, "r") as f:
+            # Use tomllib if available (Python 3.11+), otherwise fall back to third-party 'toml'
+            data = f.read()
+        data = toml.loads(data)
     except FileNotFoundError:
         print(f"Error: '{path}' not found.", file=sys.stderr)
         sys.exit(1)
